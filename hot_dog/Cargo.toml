@@ -1,0 +1,36 @@
+[package]
+name = "hot_dog"
+version = "0.1.0"
+authors = ["Ayomide Akinola <drayfocus@gmail.com>"]
+edition.workspace = true
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+dioxus.workspace = true
+reqwest.workspace = true
+serde.workspace = true
+rusqlite = { version = "0.35.0", optional = true }
+libloading.workspace = true
+realfft.workspace = true
+speech_to_text = { path = "../speech_to_text" }
+text_to_speech = { path = "../text_to_speech" }
+
+[features]
+default = []
+web = ["dioxus/web"]
+desktop = ["dioxus/desktop"]
+mobile = ["dioxus/mobile"]
+server = ["dioxus/server", "dep:rusqlite"]
+
+[profile]
+
+[profile.wasm-dev]
+inherits = "dev"
+opt-level = 1
+
+[profile.server-dev]
+inherits = "dev"
+
+[profile.android-dev]
+inherits = "dev"

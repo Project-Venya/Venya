@@ -1,0 +1,31 @@
+[package]
+name = "text_to_speech"
+version = "0.1.0"
+edition.workspace = true
+
+[features]
+default = ["ort/load-dynamic"]
+
+[dependencies]
+anyhow.workspace = true
+clap.workspace = true
+csv.workspace = true
+derive.workspace = true
+deunicode.workspace = true
+features.workspace = true
+hound.workspace = true
+ndarray.workspace = true
+ndarray-npy.workspace = true
+num2words.workspace = true
+once_cell.workspace = true
+ort.workspace = true
+regex.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+ssml-parser.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+unicode-segmentation.workspace = true
+dioxus.workspace = true
+sherpa-rs.workspace = true
+python_runner = { path = "../python_runner" }

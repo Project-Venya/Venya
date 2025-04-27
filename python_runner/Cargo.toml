@@ -1,0 +1,9 @@
+[package]
+name = "python_runner"
+version = "0.1.0"
+publish.workspace = true
+edition.workspace = true
+
+[dependencies]
+bytemuck.workspace = true
+ndarray.workspace = true
