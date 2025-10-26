@@ -1,5 +1,6 @@
 use dioxus::prelude::*;
 use speech_to_text::AudioRecorder;
+use text_to_speech::{audio_player::AudioPlayer, kokoro::Kokoro};
 
 use crate::backend::initialize_text_to_speech;
 
@@ -8,13 +9,53 @@ pub fn SpeechToText() -> Element {
     let mut is_recording = use_signal(|| false);
     let mut button_label = use_signal(|| "Start Recording".to_string());
     let mut button_color = use_signal(|| "!bg-blue-500 hover:bg-blue-700".to_string());
+    let mut audio_player: Signal<Option<AudioPlayer>> = use_signal(|| None);
 
     let mut translated_text = use_signal(|| Vec::new());
 
     let cargo_path = env!("CARGO_MANIFEST_DIR");
 
     let mut audio_recorder = use_signal(|| AudioRecorder::new(cargo_path).unwrap());
-    let mut text_to_speech_engine = use_signal(|| initialize_text_to_speech().unwrap());
+
+    let mut text_to_speech_engine: Signal<Option<Kokoro>> = use_signal(|| None);
+
+    // Initialize TSS
+    use_effect(move || {
+        println!("Mounted component");
+
+        // Initiate TTS engine
+        if text_to_speech_engine.read().is_none() {
+            spawn(async move {
+                // let tts = initialize_text_to_speech().unwrap();
+
+                // text_to_speech_engine.set(Some(tts));
+                {
+                    match initialize_text_to_speech().await {
+                        Ok(tts) => {
+                            // Set the initialized TTS engine in the state
+                            text_to_speech_engine.set(Some(tts));
+                        }
+                        Err(e) => {
+                            // Handle the error if initialization fails
+                            eprintln!("Failed to initialize TTS: {}", e);
+                        }
+                    }
+                }
+            });
+        }
+    });
+
+    // Initiate AudioPlayer
+    use_effect(move || {
+        if audio_player.read().is_none() {
+            spawn(async move {
+                {
+                    let player = AudioPlayer::new().unwrap();
+                    audio_player.set(Some(player));
+                }
+            });
+        }
+    });
 
     let mut text_to_speak = use_signal(|| {
         "Venya is a voice-first AI assistant that listens, learns, and grows with you — helping you manage your day, reflect, read books, and spark conversations.".to_string()
@@ -36,13 +77,6 @@ pub fn SpeechToText() -> Element {
 
     let convert_to_text = move |_event| async move {
         if !is_recording() {
-            // let response_text = audio_recorder
-            //     .write()
-            //     .convert_speech_to_text_vosk()
-            //     .unwrap();
-
-            // println!("{:?}", response_text);
-
             let response_whisper = audio_recorder
                 .write()
                 .convert_speech_to_text_whisper()
@@ -59,11 +93,32 @@ pub fn SpeechToText() -> Element {
 
         println!("Starting....");
 
-        let _ = text_to_speech_engine
-            .write()
-            .generate_audio(text_to_speak().as_str());
+        spawn(async move {
+            let text_to_speak_clone = text_to_speak.read();
+            let mut engine_instance = text_to_speech_engine.write();
 
-        println!("Speaking: {}", text_to_speak.read());
+            if engine_instance.is_some() {
+                let _ = engine_instance
+                    .as_mut()
+                    .unwrap()
+                    .generate_audio(text_to_speak_clone.as_str())
+                    .await;
+
+                if audio_player.read().is_some() {
+                    let _ = audio_player.read().as_ref().unwrap().play(
+                        engine_instance
+                            .as_ref()
+                            .unwrap()
+                            .current_audio_file_path
+                            .as_ref()
+                            .unwrap()
+                            .as_str(),
+                    );
+                }
+
+                println!("Speaking: {}", text_to_speak_clone);
+            }
+        });
     };
 
     rsx! {
@@ -81,13 +136,22 @@ pub fn SpeechToText() -> Element {
                 class: "w-64 border-2 border-gray-300 rounded-md p-2",
                 onchange: move |event| {
                     let selected_index = event.to_owned().value().parse::<usize>().unwrap_or(0);
-                    text_to_speech_engine.write().set_speaker(selected_index as u32);
+                     let mut engine_instance = text_to_speech_engine.write();
+
+                      if engine_instance.is_some() {
+                          let engine = engine_instance
+                              .as_mut()
+                              .unwrap();
+                          engine.set_speaker(selected_index as u32);
+                      }
                 },
-                for (index, speaker) in text_to_speech_engine.read().get_speakers().iter().enumerate() {
-                    option {
-                        value: "{index}",
-                        selected: text_to_speech_engine.read().current_speaker == index as u32,
-                        "{speaker.name} ({speaker.gender})"
+                if let Some(engine) = text_to_speech_engine.read().as_ref() {
+                    for (index, speaker) in engine.get_speakers().iter().enumerate() {
+                        option {
+                            value: "{index}",
+                            selected: engine.current_speaker == index as u32,
+                            "{speaker.name} ({speaker.gender})"
+                        }
                     }
                 }
             }

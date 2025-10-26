@@ -1,0 +1,13 @@
+[package]
+name = "uicomponents"
+version = "0.1.0"
+publish.workspace = true
+edition.workspace = true
+
+[dependencies]
+dioxus.workspace = true
+reqwest.workspace = true
+base64.workspace = true
+regex.workspace = true
+chrono.workspace = true
+rand.workspace = true

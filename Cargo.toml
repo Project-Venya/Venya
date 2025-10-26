@@ -1,27 +1,26 @@
 [workspace]
 resolver = "2"
 
-members = ["speech_to_text", "text_to_speech", "hot_dog", "python_runner"]
+members = ["speech_to_text", "text_to_speech", "hot_dog", "app", "uicomponents"]
 
 [workspace.package]
 publish = false
 edition = "2021"
 
-
 [workspace.dependencies]
 anyhow = "1.0.98"
-clap = { version = "4.5.37", features = ["derive"] }
+clap = { version = "4.5.39", features = ["derive"] }
 csv = "1.3.1"
 derive = "1.0.0"
-deunicode = "1.6.1"
+deunicode = "1.6.2"
 features = "0.10.0"
+tokio = "1.45.1"
 # griffin-lim = { git = "http://github.com/emotechlab/griffin-lim.git" }
 hound = "3.5.1"
 ndarray = "0.16.1"
-ndarray-npy = "0.9.1"                                         # Just for convenient moving to/from python for checking
+ndarray-npy = "0.9.1"                                  # Just for convenient moving to/from python for checking
 num2words = "1.2.0"
 once_cell = "1.21.3"
-ort = { version = "2.0.0-rc.0", features = ["load-dynamic"] }
 regex = "1.11.1"
 serde = { version = "1.0.219", features = ["derive"] }
 serde_json = "1.0.140"
@@ -31,16 +30,24 @@ tracing = "0.1.41"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
 #tract-onnx = { version = "0.20.21" }
 unicode-segmentation = "1.12.0"
-dioxus = { version = "0.6.3", features = ["fullstack", "router"] }
-reqwest = { version = "0.12.15", features = ["json"] }
+dioxus = { version = "0.6.3", features = ["fullstack", "router", "desktop"] }
+reqwest = { version = "0.12.18", features = ["json"] }
 cpal = { version = "0.15" }
-vosk = "0.3.1"
 libloading = "0.8"
 ffmpeg-next = "7.1.0"
 rubato = "0.16.2"
 realfft = "3.4.0"
-bytemuck = "1.22.0"
-sherpa-rs = { version = "0.6.6", features = ["tts", "download-binaries"] }
+bytemuck = "1.23.0"
+async-std = "1.13.1"
+base64 = "0.22.1"
+rodio = "0.20.1"
+sherpa-rs = { git = "https://github.com/Doctordrayfocus/sherpa-rs.git", features = [
+    "tts",
+    "static",
+] }
+lazy_static = "1.5.0"
+chrono = { version = "0.4.41", features = ["serde"] }
+rand = "0.8"
 
 [profile]
 

@@ -1,0 +1,24 @@
+@import "tailwindcss";
+
+/* Skeleton loader class */
+.skeleton {
+    @apply bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700;
+    @apply bg-[length:200%_100%];
+    @apply animate-[shimmer_1.5s_infinite];
+}
+
+input:disabled::placeholder,
+textarea:disabled::placeholder {
+    -webkit-text-fill-color: var(--placeholder-color);
+    -webkit-opacity: 1;
+    opacity: 1;
+    color: var(--placeholder-color);
+}
+
+input:disabled,
+textarea:disabled {
+    -webkit-text-fill-color: var(--text-color);
+    -webkit-opacity: 1;
+    opacity: 1;
+    color: var(--text-color);
+}

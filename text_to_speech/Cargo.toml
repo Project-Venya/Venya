@@ -4,7 +4,7 @@ version = "0.1.0"
 edition.workspace = true
 
 [features]
-default = ["ort/load-dynamic"]
+
 
 [dependencies]
 anyhow.workspace = true
@@ -13,12 +13,13 @@ csv.workspace = true
 derive.workspace = true
 deunicode.workspace = true
 features.workspace = true
+rodio.workspace = true
+tokio.workspace = true
 hound.workspace = true
 ndarray.workspace = true
 ndarray-npy.workspace = true
 num2words.workspace = true
 once_cell.workspace = true
-ort.workspace = true
 regex.workspace = true
 serde.workspace = true
 serde_json.workspace = true
@@ -28,4 +29,4 @@ tracing-subscriber.workspace = true
 unicode-segmentation.workspace = true
 dioxus.workspace = true
 sherpa-rs.workspace = true
-python_runner = { path = "../python_runner" }
+lazy_static.workspace = true

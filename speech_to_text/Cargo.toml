@@ -8,6 +8,4 @@ edition.workspace = true
 cpal.workspace = true
 hound.workspace = true
 anyhow.workspace = true
-vosk.workspace = true
 rubato.workspace = true
-python_runner = { path = "../python_runner" }

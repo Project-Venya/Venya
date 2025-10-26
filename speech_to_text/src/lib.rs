@@ -1,7 +1,6 @@
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 use cpal::{FromSample, Sample};
 use hound::{SampleFormat, WavReader, WavSpec, WavWriter};
-use python_runner::run_vosk;
 use rubato::{FftFixedInOut, Resampler};
 use std::env;
 use std::path::PathBuf;
@@ -205,23 +204,6 @@ impl AudioRecorder {
             writer.write_sample(sample).unwrap();
         }
         writer.finalize().unwrap();
-    }
-
-    /// Converts speech to text using the Vosk API.
-    pub fn convert_speech_to_text_vosk(&self) -> Result<String, Box<dyn std::error::Error>> {
-        let wav_file_path = format!("{}/assets/audios/resampled.wav", self.manifest_dir);
-        println!("wav file path - {}", wav_file_path);
-
-        let output = run_vosk(wav_file_path.as_str()).unwrap();
-
-        if output.status.success() {
-            Ok(String::from_utf8_lossy(&output.stdout).to_string())
-        } else {
-            Err(Box::new(std::io::Error::new(
-                std::io::ErrorKind::Other,
-                String::from_utf8_lossy(&output.stderr).to_string(),
-            )))
-        }
     }
 
     /// Runs Whisper on an audio file and returns a vector of transcript segments.

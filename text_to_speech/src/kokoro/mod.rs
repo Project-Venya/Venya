@@ -1,5 +1,11 @@
 use sherpa_rs::tts::{KokoroTts, KokoroTtsConfig};
+use std::sync::Arc;
+use std::sync::Mutex;
+use tokio::task;
 
+use crate::text_normalizer::TextNormalizer;
+
+/// Represents a speaker with their ID, name, gender, and native language.
 pub struct Speaker {
     pub id: u32,
     pub name: String,
@@ -7,15 +13,20 @@ pub struct Speaker {
     pub native_language: String,
 }
 
+/// Manages the Kokoro TTS engine, available speakers, and audio output.
 pub struct Kokoro {
-    tts: KokoroTts,
+    tts: Arc<Mutex<KokoroTts>>,
     pub speakers: Vec<Speaker>,
     pub speed: f32,
     pub current_speaker: u32,
     pub audio_output_file: String,
+    pub current_audio_file_path: Option<String>,
 }
 
 impl Kokoro {
+    /// Creates a new `Kokoro` instance.
+    ///
+    /// It initializes the TTS engine with the provided configuration and sets up the available speakers.
     pub fn new(audio_output_file: String) -> Self {
         let cargo_manifest_path = env!("CARGO_MANIFEST_DIR");
 
@@ -37,38 +48,65 @@ impl Kokoro {
         let tts = KokoroTts::new(config);
 
         let new_instance = Self {
-            tts,
+            tts: Arc::new(Mutex::new(tts)),
             speakers: set_available_speakers(),
             speed: 1.0,
             current_speaker: 0,
             audio_output_file,
+            current_audio_file_path: None,
         };
 
         new_instance
     }
 
-    pub fn generate_audio(&mut self, text: &str) {
+    /// Generates audio from the given text using the current speaker and speed.
+    pub async fn generate_audio(&mut self, text: &str) -> Result<(), Box<dyn std::error::Error>> {
         let sid = self.speakers[self.current_speaker as usize].id as i32;
+        let speed = self.speed.clone(); // Clone the speed so it can be moved into the closure
+        let tts = self.tts.clone(); // Clone or move the tts instance, depending on its type
 
-        let audio = self.tts.create(&text, sid, self.speed).unwrap();
+        // Clean and normalize text
+        let normalizer = TextNormalizer::new();
+        let normalized_text = normalizer.normalize(text);
 
-        sherpa_rs::write_audio_file(
-            &self.audio_output_file.as_str(),
-            &audio.samples,
-            audio.sample_rate,
-        )
-        .unwrap();
+        println!("Normalized: {}", normalized_text);
+
+        // Use spawn_blocking to offload blocking operations to a separate thread
+        let audio_result = task::spawn_blocking(move || {
+            let mut tts = tts.lock().unwrap();
+            tts.create(&normalized_text, sid, speed).unwrap()
+        })
+        .await?;
+
+        // After the audio is generated, write it to the file in the background
+        let audio_output_file = self.audio_output_file.clone(); // Clone the output file path for the closure
+        task::spawn_blocking(move || {
+            sherpa_rs::write_audio_file(
+                &audio_output_file.as_str(),
+                &audio_result.samples,
+                audio_result.sample_rate,
+            )
+            .unwrap();
+        })
+        .await?;
+
+        self.current_audio_file_path = Some(self.audio_output_file.to_string());
+
+        Ok(())
     }
 
+    /// Returns a reference to the vector of available speakers.
     pub fn get_speakers(&self) -> &Vec<Speaker> {
         &self.speakers
     }
 
+    /// Sets the current speaker by index.
     pub fn set_speaker(&mut self, index: u32) {
         self.current_speaker = index;
     }
 }
 
+/// Returns a vector of pre-defined speakers with different languages and genders.
 fn set_available_speakers() -> Vec<Speaker> {
     vec![
         // American English

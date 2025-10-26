@@ -1,0 +1,35 @@
+[application]
+
+[web.app]
+
+# HTML title tag content
+title = "Venya"
+
+# include `assets` in web platform
+[web.resource]
+
+# Additional CSS style files
+style = []
+
+# Additional JavaScript files
+script = []
+
+[web.resource.dev]
+
+# Javascript code file
+# serve: [dev-server] only
+script = []
+
+# Tauri bundler
+[bundle]
+identifier = "com.drayfocus.venya.ai"
+publisher = "Drayfocus"
+copyright = "Copyright 2025 Drayfocus"
+category = "Utility"
+short_description = "A utility application built with Dioxus"
+long_description = "This application provides various utility functions..."
+
+[bundle.macos]
+entitlements = "entitlements.plist"
+hardened_runtime = true
+files = {}
